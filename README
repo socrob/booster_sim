@@ -1,0 +1,11 @@
+# Dev Cycle Example
+# Build and start in background
+# make compose-build
+# make compose-up
+
+# # Open extra shells
+# make exec
+# make exec
+
+# # When done, shut down cleanly
+# docker compose down
