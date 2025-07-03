@@ -66,16 +66,6 @@ RUN apt-get update && \
 # === Python deps for Booster SDK ===
 RUN pip3 install pybind11 pybind11-stubgen
 
-# === Copy local Webots folder into container ===
-COPY ./webots /usr/local/webots
-
-# === Set Webots environment variables ===
-ENV WEBOTS_HOME=/usr/local/webots
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$WEBOTS_HOME/lib/controller
-ENV PATH=$WEBOTS_HOME:$WEBOTS_HOME/bin:$PATH
-RUN echo "export PATH=\$WEBOTS_HOME:\$WEBOTS_HOME/bin:\$PATH" >> ~/.bashrc
-
-
 # === Clone and build Booster SDK ===
 WORKDIR /root/Workspace
 RUN git clone https://github.com/BoosterRobotics/booster_robotics_sdk.git && \
@@ -89,10 +79,36 @@ RUN git clone https://github.com/BoosterRobotics/booster_robotics_sdk.git && \
 
 # === Copy your entire project ===
 COPY ./ /root/Workspace/booster_sim
-    
+
+# Download all zips in one go to /tmp
+WORKDIR /tmp
+
+RUN curl -L -o webots.zip "https://github.com/socrob/booster_sim/releases/download/v1.0/webots.zip" && \
+    curl -L -o worlds.zip "https://github.com/socrob/booster_sim/releases/download/v1.0/worlds.zip" && \
+    curl -L -o sim_control.zip "https://github.com/socrob/booster_sim/releases/download/v1.0/sim_control.zip" && \
+    curl -L -o fastdds-monitor.zip "https://github.com/socrob/booster_sim/releases/download/v1.0/fastdds-monitor.zip"
+
+# Unpack them into the right places
+WORKDIR /root/Workspace/booster_sim
+
+RUN unzip /tmp/webots.zip && mv webots /usr/local/webots && \
+    unzip /tmp/worlds.zip && \
+    unzip /tmp/sim_control.zip && \
+    unzip /tmp/fastdds-monitor.zip && \
+    rm /tmp/*.zip
+
+
+# === Set Webots environment variables ===
+ENV WEBOTS_HOME=/usr/local/webots
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$WEBOTS_HOME/lib/controller
+ENV PATH=$WEBOTS_HOME:$WEBOTS_HOME/bin:$PATH
+RUN echo "export PATH=\$WEBOTS_HOME:\$WEBOTS_HOME/bin:\$PATH" >> ~/.bashrc
+
+
 # === Make sure your runner has execute permissions ===
-RUN chmod +x /root/Workspace/booster_sim/sim_control/booster-runner-full-webots-7dof_arms-0.0.3.run
-RUN chmod +x /root/Workspace/booster_sim/sim_control/booster-runner-webots-full-0.0.10.run
+RUN chmod +x /root/Workspace/booster_sim/sim_control/booster-runner-full-webots-7dof_arms-0.0.3.run && \
+    chmod +x /root/Workspace/booster_sim/sim_control/booster-runner-webots-full-0.0.10.run
+
 
 # === Aliases ===
 RUN echo "alias start-webots='cd /root/Workspace/booster_sim/worlds && webots T1_7dofs_arm_on_ground.wbt'" >> ~/.bashrc
