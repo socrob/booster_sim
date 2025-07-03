@@ -23,7 +23,7 @@ clean:
 
 # Build with Docker Compose
 compose-build:
-	docker compose -f docker-compose.yml build
+	docker compose -f docker-compose.yml build --no-cache
 
 
 compose-up:

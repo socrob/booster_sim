@@ -12,19 +12,29 @@ services:
         reservations:
           devices:
             - capabilities: [gpu]
+
     network_mode: host
     ipc: host
     pid: host
     privileged: true
+
     environment:
       - DISPLAY=${DISPLAY}
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
+      - LIBGL_ALWAYS_INDIRECT=0
       - WEBOTS_HOME=/usr/local/webots
       - LD_LIBRARY_PATH=/usr/local/webots/lib/controller
+
     devices:
-      - /dev/dri
+      - /dev/dri:/dev/dri
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-modeset:/dev/nvidia-modeset
+
     volumes:
-      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
       - /etc/localtime:/etc/localtime:ro
-    # command: /root/Workspace/booster_sim/docker/entrypoint.sh
+    
     stdin_open: true
     tty: true
