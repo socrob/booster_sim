@@ -1,4 +1,4 @@
-# 🚀 Booster Sim — Dockerized Booster Robotics Simulation
+# Booster Sim — Dockerized Booster Robotics Webots Simulation
 
 This repository contains a **Docker-based development environment** for running the **Booster Robotics simulation stack**, including:
 
