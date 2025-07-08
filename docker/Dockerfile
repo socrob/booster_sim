@@ -86,8 +86,10 @@ RUN chmod +x /root/Workspace/booster_sim/sim_control/booster-runner-full-webots-
     chmod +x /root/Workspace/booster_sim/sim_control/booster-runner-webots-full-0.0.10.run
 
 # === Aliases ===
-RUN echo "alias start-webots='cd /root/Workspace/booster_sim/worlds && webots T1_7dofs_arm_on_ground.wbt'" >> ~/.bashrc && \
-    echo "alias start-runner='cd /root/Workspace/booster_sim/sim_control && ./booster-runner-full-webots-7dof_arms-0.0.3.run'" >> ~/.bashrc && \
+RUN echo "alias start-webots-7dof='cd /root/Workspace/booster_sim/worlds && webots T1_7dofs_arm_on_ground.wbt'" >> ~/.bashrc && \
+    echo "alias start-webots='cd /root/Workspace/booster_sim/worlds && webots T1_release.wbt'" >> ~/.bashrc && \
+    echo "alias start-runner='cd /root/Workspace/booster_sim/sim_control && ./booster-runner-webots-full-0.0.10.run'" >> ~/.bashrc && \
+    echo "alias start-runner-7dof='cd /root/Workspace/booster_sim/sim_control && ./booster-runner-full-webots-7dof_arms-0.0.3.run'" >> ~/.bashrc && \
     echo "alias sdk-client='cd /root/Workspace/booster_robotics_sdk/build && ./b1_loco_example_client 127.0.0.1'" >> ~/.bashrc
 
 # === ROS 2 Workspace ===
@@ -98,7 +100,6 @@ WORKDIR /root/Workspace/ros2_ws/src
 RUN git clone https://e.coding.net/generate-gjjleqkqwr/booster-robotics/booster_ros2_interface.git && \
     git clone https://e.coding.net/generate-gjjleqkqwr/booster-robotics/booster_ros2_example.git
 
-# CMD ["bash"]    
 WORKDIR /root/Workspace/ros2_ws
 RUN /bin/bash -c "source /opt/ros/humble/setup.bash && \
                   rosdep update && \
