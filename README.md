@@ -1,93 +1,127 @@
 # Booster Sim — Dockerized Booster Robotics Webots Simulation
 
-This repository contains a **Docker-based development environment** for running the **Booster Robotics simulation stack**, including:
+This repository provides a **Dockerized development and simulation stack** for Booster Robotics, including:
 
-- ✅ **Webots** — for robot simulation.
-- ✅ **Booster Control Runner** — to bridge the SDK and Webots.
-- ✅ **FastDDS** — configured for ROS 2 inter-process communication.
-- ✅ **Booster ROS 2 packages** — for future integration.
+- ✅ **Webots** — advanced 3D robot simulator.
+- ✅ **Booster Control Runner** — bridges the SDK and Webots simulation.
+- ✅ **FastDDS** — real-time DDS middleware for ROS 2.
+- ✅ **Booster ROS 2 packages** — integrated example and interface nodes.
 
 ---
 
-## 📦 How this works
+## 📦 How it works
 
-Some parts of the Booster stack (like the Webots environment, control runner, FastDDS monitor) are large binaries provided directly by Booster Robotics.
+Large binaries like Webots, worlds, control runners and FastDDS monitor are distributed via **GitHub Releases**, not tracked in the repository.
 
-To ensure **reproducible, CI/CD-friendly builds**, these `.zip` files are **not tracked** in the git repo but are instead **attached to GitHub Releases**.
+The `Dockerfile` automatically:
 
-The `Dockerfile`:
-- Pulls the official binaries directly using `curl` from the GitHub Release.
-- Unzips them into the correct locations inside the container.
-- Installs ROS 2 Humble with NVIDIA CUDA base for GPU acceleration.
+- Pulls these `.zip` files with `curl`.
+- Unpacks them in the right directories.
+- Installs ROS 2 Humble on **NVIDIA CUDA** runtime for GPU-accelerated OpenGL.
+- Removes unnecessary Mesa fallback libraries early to avoid software rendering fallback.
 
 ---
 
 ## 🐳 NVIDIA Runtime Requirements
 
-**Note:**  
-This image uses:
+This stack runs on:
 
 ```
 FROM nvidia/cuda:12.3.1-runtime-ubuntu22.04
 ```
 
-👉 **This means your host must have a compatible NVIDIA GPU and matching drivers** for CUDA 12.3.1 and the NVIDIA Container Runtime.  
+**You must have:**
+
+- A compatible NVIDIA GPU.
+- Proper NVIDIA drivers installed on the host for CUDA 12.3+.
+- The `nvidia-container-toolkit` and `nvidia-docker` runtime configured.
+
 Test with:
+
 ```bash
 nvidia-smi
 ```
 
+Ensure it shows your GPU with no errors.
+
+This guarantees **hardware OpenGL rendering** inside the container (not Mesa).
+
 ---
 
-## ✅ How to run
+## ✅ Quickstart with Makefile
+
+Use the `Makefile` for a simple workflow:
 
 ```bash
-# Build the image
+# Build the Docker image
 make compose-build
 
-# Launch in detached mode
+# Launch the container stack
 make compose-up
 
-# Open a shell inside the container
+# Open a shell inside the running container
 make exec
 
-# Shut everything down cleanly
+# Shut down and clean up
 make compose-down
 ```
 
+✅ The `compose-up` automatically forwards X11 for GUI (Webots) and uses the NVIDIA runtime.
+
 ---
 
-## ⚙️ Manual startup inside the container
+## ⚙️ Manual usage inside container
 
-There is **no automatic `ENTRYPOINT`** right now — you manually launch your simulation parts:
+No automatic entrypoint is defined. Once inside the container, use the pre-set **bash aliases**:
 
 ```bash
-# Inside the container:
+# Run the 7DOF simulation world:
+start-webots-7dof
+
+# Or run the release world:
 start-webots
+
+# Start the Control Runner (matching version):
 start-runner
+start-runner-7dof
+
+# Run SDK client example:
 sdk-client
 ```
 
-These `bash` aliases are pre-configured for you in `.bashrc`.
+These are all defined in the `Dockerfile` and ready to use in `~/.bashrc`.
 
 ---
 
-## ✅ FastDDS
+## ✅ FastDDS config
 
-A custom `fastdds_profile.xml` is included. The `Dockerfile` sets:
+A custom `fastdds_profile.xml` is included and auto-set:
+
 ```bash
 export FASTRTPS_DEFAULT_PROFILES_FILE=/root/Workspace/booster_sim/fastdds_profile.xml
 ```
 
----
-
-## 📌 License and vendor note
-
-The `.zip` files come from the official Booster Robotics documentation.  
-We host them in Releases only for **internal CI/CD reproducibility**.  
-All rights and ownership belong to Booster Robotics.
-
+No extra setup needed.
 
 ---
 
-**© Booster Robotics Internal Simulation — 2024**
+## ⚡️ GPU OpenGL troubleshooting
+
+If you see **Webots using Mesa**, double-check:
+
+- You started Docker with `--runtime=nvidia`.
+- You passed `/dev/dri` and NVIDIA device nodes.
+- You have `xhost +local:docker` to allow GUI access.
+- Your host has the proprietary NVIDIA OpenGL drivers (`libGLX_nvidia.so` etc.).
+
+---
+
+## 📌 License and vendor notice
+
+The `.zip` binaries are from Booster Robotics official distribution and provided in GitHub Releases only for **team internal use**.
+
+All intellectual property belongs to Booster Robotics.
+
+---
+
+**© Booster Robotics Simulation — 2025**
